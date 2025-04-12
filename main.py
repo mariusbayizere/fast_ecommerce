@@ -2,6 +2,7 @@ from fastapi import FastAPI, status
 from typing import Optional
 from pydantic import BaseModel
 from typing import List
+from fastapi.exceptions import HTTPException
 
 
 app =FastAPI()
@@ -113,6 +114,14 @@ class Student(BaseModel):
        Gender: str
        Nationality: str
 
+class Update_Student(BaseModel): 
+       FirstName: str
+       LastName: str
+       Email: str
+       PhoneNumber: str 
+       Gender: str
+       Nationality: str
+
 @app.get('/students', response_model=List[Student])
 async def get_students()-> list:
     """
@@ -129,3 +138,32 @@ async def create_student(student_data: Student) -> dict:
     new_student = student_data.model_dump()
     Students.append(new_student)
     return new_student
+
+
+@app.get('/students/{Student_id}', status_code=status.HTTP_200_OK)
+async def get_student(Student_id: int)-> dict:
+    """
+    This function returns a student with the given ID.
+    """
+    for student in Students:
+          if student['id'] == Student_id:
+            return student
+    raise HTTPException(status_code=404, detail="Student not found")
+    
+
+@app.put('/students/{student_id}', status_code=status.HTTP_200_OK)
+async def Update_student(student_id:int, student_update: Update_Student)-> dict:
+    """
+    This function updates a student with the given ID and returns the updated student data.
+    """
+    for student in Students:
+          if student['id'] == student_id:
+               student['FirstName'] = student_update.FirstName
+               student['LastName'] = student_update.LastName
+               student['Email'] = student_update.Email
+               student['PhoneNumber'] = student_update.PhoneNumber
+               student['Gender'] = student_update.Gender
+               student['Nationality'] = student_update.Nationality
+               return student
+    raise HTTPException(status_code=404, detail="Student not found")
+            
