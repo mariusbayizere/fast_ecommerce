@@ -52,11 +52,15 @@ async def login_user(user_data: User_Login_Model, session: AsyncSession = Depend
             
             return JSONResponse(
                 content={
+                    "Message":"Login Successfully",
                     "access_token": access_token,
                     "refresh_token": refresh_token,
+                    "User":{
                     "user": user.id,
+                    "User Name":user.username,
                     "email": user.email,
                     "role": user.role
+                    }
                 },
                 status_code=status.HTTP_200_OK
             )

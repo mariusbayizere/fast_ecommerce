@@ -6,14 +6,17 @@ from src.students.models import Student
 from src.students.services import studentservice
 from .schemas import StudentResponse, Update_Student, Create_Student
 from fastapi.exceptions import HTTPException
+from src.auth.dependencies import Access_token_Bearer
 
 
 
 student_router = APIRouter()
 student_service = studentservice()
+access_tokens_bearer = Access_token_Bearer()
+
 
 @student_router.get('/', response_model=List[StudentResponse])
-async def get_students(session: AsyncSession=Depends(det_session))-> List[StudentResponse]:
+async def get_students(session: AsyncSession=Depends(det_session), user_details=Depends(access_tokens_bearer))-> List[StudentResponse]:
     """This function is responsible for returning all student information
 
     Args:
