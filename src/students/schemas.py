@@ -1,7 +1,16 @@
 from pydantic import BaseModel
 
-class Student(BaseModel):
+class StudentResponse(BaseModel):
        id: int 
+       FirstName: str
+       LastName: str
+       Email: str
+       PhoneNumber: str 
+       Gender: str
+       Nationality: str
+
+
+class Create_Student(BaseModel): 
        FirstName: str
        LastName: str
        Email: str

@@ -1,94 +1,115 @@
-from fastapi import APIRouter, status
-from typing import List, Optional
-from src.students.student_date import Students
-from .schemas import Student, Update_Student
+from fastapi import APIRouter, status, Depends
+from typing import List
+from sqlmodel.ext.asyncio.session import AsyncSession
+from src.db.main import det_session
+from src.students.models import Student
+from src.students.services import studentservice
+from .schemas import StudentResponse, Update_Student, Create_Student
 from fastapi.exceptions import HTTPException
 
 
 
 student_router = APIRouter()
+student_service = studentservice()
 
+@student_router.get('/', response_model=List[StudentResponse])
+async def get_students(session: AsyncSession=Depends(det_session))-> List[StudentResponse]:
+    """This function is responsible for returning all student information
 
-# @student_router.get('/')
-# async def read_root():
-#     """
-#     This is the root function that returns a welcome message.
-#     """
-#     return {"Message":"Hello Marius"}
+    Args:
+        session (AsyncSession): _description_. Defaults to Depends(det_session).
 
-
-
-# @student_router.get('/greet/{name}')
-# async def greeting(name: str, age : int)-> dict:
-#     """
-#     This is a greeting function that takes a name and age as parameters.
-#     It returns a dictionary with the name and age.
-#     """
-#     return {"Message":f"my name is {name} I have ", "Age" : age}
-
-
-# @student_router.get('/greets')
-# async def greeting_name(name: Optional[str]="User", age : Optional[int]=20)-> dict:
-#     """"
-#     This is a greeting function that takes a name and age as parameters.
-#     It returns a dictionary with the name and age.
-#     """
-#     return {"Message":f"My name is {name}", "Age":age}
-
-
-@student_router.get('/', response_model=List[Student])
-async def get_students()-> list:
+    Returns:
+        list: return all student data from server
     """
-    This function returns a list of students.
-    """
-    return Students
+    students = await student_service.get_all_students(session)
+
+    return students
 
 
-@student_router.post('/', status_code=status.HTTP_201_CREATED)
-async def create_student(student_data: Student) -> dict:
+@student_router.post('/', status_code=status.HTTP_201_CREATED, response_model=StudentResponse)
+async def create_student(student_data: Create_Student, session: AsyncSession= Depends(det_session)) -> dict:
+    """This function is responsible for creating a new student
+    and returning the student data.
+
+    Args:
+        student_data (Student): will recieving student data as request body which having pydantic model to validate data
+        session (AsyncSession, optional): . Defaults to Depends(det_session).
+
+    Returns:
+        dict: return student data
     """
-    This function creates a new student and returns the student data.
-    """
-    new_student = student_data.model_dump()
-    Students.append(new_student)
+    new_student = await student_service.create_student(student_data, session)
     return new_student
 
 
-@student_router.get('/{Student_id}', status_code=status.HTTP_200_OK)
-async def get_student(Student_id: int)-> dict:
-    """
-    This function returns a student with the given ID.
-    """
-    for student in Students:
-          if student['id'] == Student_id:
-            return student
-    raise HTTPException(status_code=404, detail="Student not found")
+@student_router.get('/{Student_id}', response_model= StudentResponse, status_code=status.HTTP_200_OK)
+async def get_student(Student_id: int, session:AsyncSession= Depends(det_session))-> StudentResponse:
+        """This function is responsible for returning a student information by id
+
+        Args:
+            Student_id (int): receive student_id to searching student
+            session (AsyncSession, optional): _description_. Defaults to Depends(det_session).
+
+        Raises:
+            HTTPException: if student not found
+
+        Returns:
+            dict: return student data if found else return None
+        """
+
+        student_by_id = await student_service.get_student_by_id(Student_id, session)
+
+        if student_by_id is None:
+             raise HTTPException(status_code=404, detail=f"Student with ID : {Student_id} is not found")
+
+        return student_by_id
+    
     
 
-@student_router.put('/{student_id}', status_code=status.HTTP_200_OK)
-async def Update_student(student_id:int, student_update: Update_Student)-> dict:
+@student_router.put('/{student_id}', response_model=StudentResponse, status_code=status.HTTP_200_OK)
+async def Update_student(student_id: int, student_update: Update_Student, session: AsyncSession = Depends(det_session))-> dict:
+    """This function is responsible for updating a student information
+    and returning the updated student data.
+
+    Args:
+        student_id (int): will receive student id to update
+        student_update (Update_Student): will receive student data to update which is having pydantic model
+        session (AsyncSession): will receive session as arguments
+
+    Raises:
+        HTTPException: if student not found
+
+    Returns:
+        dict: return student data
     """
-    This function updates a student with the given ID and returns the updated student data.
-    """
-    for student in Students:
-          if student['id'] == student_id:
-               student['FirstName'] = student_update.FirstName
-               student['LastName'] = student_update.LastName
-               student['Email'] = student_update.Email
-               student['PhoneNumber'] = student_update.PhoneNumber
-               student['Gender'] = student_update.Gender
-               student['Nationality'] = student_update.Nationality
-               return student
-    raise HTTPException(status_code=404, detail="Student not found")
+    
+    update_student_result = await student_service.update_student(student_id, student_update, session)
+
+    if update_student_result:
+        return update_student_result
+    else:
+        raise HTTPException(status_code=404, detail=f"Student with ID {student_id} is not found")
             
 
 @student_router.delete('/{student_id}', status_code= status.HTTP_200_OK)
-async def delete_student(student_id:int)-> dict:
+async def delete_student(student_id:int, session: AsyncSession=Depends(det_session))-> dict:
+    """This function is responsible for deleting a student
+    and returning the student data.
+
+    Args:
+        student_id (int): will receive student id to delete
+        session (AsyncSession, optional): _description_. Defaults to Depends(det_session).
+
+    Raises:
+        HTTPException: if student not found
+
+    Returns:
+        dict: return student data
     """
-    This function deletes a student with the given ID and returns a success message.
-    """
-    for student in Students:
-          if student['id'] == student_id:
-               Students.remove(student)
-               return {"Message":"Student deleted successfully"}
-    raise HTTPException(status_code=404, detail="Student not found")
+    student_delete = await student_service.delete_student(student_id, session)
+
+    if student_delete:
+        return {"message": f"Student with ID {student_id} is deleted successfully"}
+    else:
+        raise HTTPException(status_code=404, detail=f"Student with ID {student_id} is not found")
