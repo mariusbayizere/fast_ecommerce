@@ -4,6 +4,8 @@ import os
 
 class Settings(BaseSettings):
     DATABASE_URL: str
+    DATABASE_URLs: str
+
 
 
     model_config = SettingsConfigDict(

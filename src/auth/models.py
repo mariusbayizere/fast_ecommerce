@@ -33,9 +33,9 @@ class User(SQLModel, table=True):
 
     __tablename__ = "users"
     id: int = Field(sa_column=Column(Integer, primary_key=True, nullable=False, autoincrement=True))
-    username: str = Field(sa_column=Column(String, nullable=False, unique=True))
-    email: str = Field(sa_column=Column(String, nullable=False, unique=True))
-    password: str = Field(sa_column=Column(String, nullable=False))
+    username: str = Field(sa_column=Column(String, nullable=False, unique=True, max_length=50))
+    email: str = Field(sa_column=Column(String, nullable=False, unique=True, max_length=100))
+    password: str = Field(exclude=True,sa_column=Column(String, nullable=False))
     role: UserRole = Field(default=UserRole.User, sa_column=Column(String, nullable=False)) 
     is_active: bool = Field(default=True, nullable=False)
     created_date : datetime = Field(sa_column=Column(pg.TIMESTAMP, default=datetime.utcnow, nullable=False))

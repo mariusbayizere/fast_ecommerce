@@ -8,6 +8,7 @@ fastapi = {extras = ["standard"], version = "*"}
 asyncpg = "*"
 pydantic-settings = "*"
 sqlmodel = "*"
+alembic = "*"
 
 [dev-packages]
 
