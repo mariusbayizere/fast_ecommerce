@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from .students.routes import student_router
 from contextlib import asynccontextmanager
 from src.db.main import init_db
+from src.auth.routes import auth_router
 
 
 @asynccontextmanager
@@ -32,3 +33,4 @@ app = FastAPI(
 
 
 app.include_router(student_router, prefix=f'/api/{version}/students', tags=['students'])
+app.include_router(auth_router, prefix=f'/api/{version}/auth', tags=['auth'])

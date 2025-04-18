@@ -9,6 +9,8 @@ asyncpg = "*"
 pydantic-settings = "*"
 sqlmodel = "*"
 alembic = "*"
+passlib = "*"
+pyjwt = "*"
 
 [dev-packages]
 

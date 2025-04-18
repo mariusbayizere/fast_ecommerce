@@ -5,6 +5,8 @@ import os
 class Settings(BaseSettings):
     DATABASE_URL: str
     DATABASE_URLs: str
+    JWT_SECRETE: str
+    JWT_ALGORITHM: str
 
 
 
