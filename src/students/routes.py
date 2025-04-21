@@ -25,13 +25,14 @@ async def get_students(session: AsyncSession=Depends(det_session), user_details=
     Returns:
         list: return all student data from server
     """
+    print(user_details)
     students = await student_service.get_all_students(session)
 
     return students
 
 
 @student_router.post('/', status_code=status.HTTP_201_CREATED, response_model=StudentResponse)
-async def create_student(student_data: Create_Student, session: AsyncSession= Depends(det_session)) -> dict:
+async def create_student(student_data: Create_Student, session: AsyncSession= Depends(det_session), user_details=Depends(access_tokens_bearer)) -> dict:
     """This function is responsible for creating a new student
     and returning the student data.
 
@@ -47,7 +48,7 @@ async def create_student(student_data: Create_Student, session: AsyncSession= De
 
 
 @student_router.get('/{Student_id}', response_model= StudentResponse, status_code=status.HTTP_200_OK)
-async def get_student(Student_id: int, session:AsyncSession= Depends(det_session))-> StudentResponse:
+async def get_student(Student_id: int, session:AsyncSession= Depends(det_session), user_details=Depends(access_tokens_bearer))-> StudentResponse:
         """This function is responsible for returning a student information by id
 
         Args:
@@ -71,7 +72,7 @@ async def get_student(Student_id: int, session:AsyncSession= Depends(det_session
     
 
 @student_router.put('/{student_id}', response_model=StudentResponse, status_code=status.HTTP_200_OK)
-async def Update_student(student_id: int, student_update: Update_Student, session: AsyncSession = Depends(det_session))-> dict:
+async def Update_student(student_id: int, student_update: Update_Student, session: AsyncSession = Depends(det_session), user_details=Depends(access_tokens_bearer))-> dict:
     """This function is responsible for updating a student information
     and returning the updated student data.
 
@@ -96,7 +97,7 @@ async def Update_student(student_id: int, student_update: Update_Student, sessio
             
 
 @student_router.delete('/{student_id}', status_code= status.HTTP_200_OK)
-async def delete_student(student_id:int, session: AsyncSession=Depends(det_session))-> dict:
+async def delete_student(student_id:int, session: AsyncSession=Depends(det_session), user_details=Depends(access_tokens_bearer))-> dict:
     """This function is responsible for deleting a student
     and returning the student data.
 

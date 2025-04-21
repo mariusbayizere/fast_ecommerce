@@ -67,5 +67,5 @@ async def login_user(user_data: User_Login_Model, session: AsyncSession = Depend
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with email {email} not found"
+            detail=f"User with email {email} is not found"
         )

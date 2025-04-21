@@ -60,13 +60,6 @@ def decode_token(token: str) -> dict:
 
 
 
-
-
-
-
-
-
-
 def create_token(user_data: dict, expiry : timedelta = None) -> str:
     playload ={
 
