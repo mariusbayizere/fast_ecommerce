@@ -1,9 +1,16 @@
 from fastapi.security import HTTPBearer
-from fastapi import Request, status
+from fastapi import Request, status, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security.http import HTTPAuthorizationCredentials
 from .utils import decode_token
 from fastapi.exceptions import HTTPException
-from src.db.redis import set_token, get_token
+from src.db.main import det_session
+from src.db.redis import get_token
+from .service import user_service
+
+
+User_Service = user_service()
+
 class token_Bearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
         """this function is used to initialize the token bearer
@@ -26,8 +33,7 @@ class token_Bearer(HTTPBearer):
                 detail="Invalid or expired token",
                 headers={"WWW-Authenticate": "Bearer"}
             )
-        
-        # if await get_token(token_data['jti']):
+
         if 'jti' in token_data and await get_token(token_data['jti']):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -91,5 +97,8 @@ class Refresh_token_Bearer(token_Bearer):
                 headers={"WWW-Authenticate": "Bearer"}
             )
 
-
-    
+async def get_current_user(token_data=Depends(Access_token_Bearer()), session: AsyncSession = Depends(det_session)):
+    """This function is used to get the current user"""
+    user_model = token_data["user"]["email"]
+    user = await User_Service.get_user_by_email(user_model, session)
+    return user
