@@ -7,12 +7,14 @@ from fastapi.exceptions import HTTPException
 from .utils import create_access_token, verify_password
 from datetime import timedelta
 from fastapi.responses import JSONResponse
-from .dependencies import Refresh_token_Bearer, Access_token_Bearer, get_current_user
+from .dependencies import Refresh_token_Bearer, Access_token_Bearer, get_current_user, Check_role
 from datetime import datetime
 from src.db.redis import set_token
 
 auth_router = APIRouter()
 User_Service = user_service()
+admin_role = Check_role('admin')
+
 
 REFERESHED_TOKEN_EXPIRE_MINUTES = 2
 
@@ -96,7 +98,7 @@ async def refresh_token(token_data: dict = Depends(Refresh_token_Bearer())):
 
 
 @auth_router.get('/me', status_code=status.HTTP_200_OK)
-async def get_currents_user(user=Depends(get_current_user)):
+async def get_currents_user(user=Depends(get_current_user), _ : bool = Depends(admin_role)):
     """
     Get the current user using the access token.
     """

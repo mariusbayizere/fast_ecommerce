@@ -7,6 +7,8 @@ from fastapi.exceptions import HTTPException
 from src.db.main import det_session
 from src.db.redis import get_token
 from .service import user_service
+from src.auth.models import User
+from typing import List
 
 
 User_Service = user_service()
@@ -102,3 +104,17 @@ async def get_current_user(token_data=Depends(Access_token_Bearer()), session: A
     user_model = token_data["user"]["email"]
     user = await User_Service.get_user_by_email(user_model, session)
     return user
+
+class Check_role:
+    def __init__(self, role: List[str])-> None:
+        self.role = role
+
+
+    def __call__(self, current_user: User = Depends(get_current_user))-> any:
+        if current_user.role in self.role:
+            return True
+        raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not authorized to perform this action",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
