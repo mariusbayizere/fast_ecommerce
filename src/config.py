@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     DATABASE_URLs: str
     JWT_SECRETE: str
     JWT_ALGORITHM: str
+    RADIS_HOST: str = "localhost"
+    RADIS_PORT: int = 6379
 
 
 

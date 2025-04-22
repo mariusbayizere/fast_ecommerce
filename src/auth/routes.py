@@ -7,7 +7,9 @@ from fastapi.exceptions import HTTPException
 from .utils import create_access_token, verify_password, decode_token
 from datetime import timedelta
 from fastapi.responses import JSONResponse
-
+from .dependencies import Refresh_token_Bearer, Access_token_Bearer
+from datetime import datetime
+from src.db.redis import set_token, get_token
 
 auth_router = APIRouter()
 User_Service = user_service()
@@ -69,3 +71,37 @@ async def login_user(user_data: User_Login_Model, session: AsyncSession = Depend
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with email {email} is not found"
         )
+    
+@auth_router.post('/refresh_token', status_code=status.HTTP_200_OK)
+async def refresh_token(token_data: dict = Depends(Refresh_token_Bearer())):
+    """
+    Generate a new access token using a valid refresh token.
+    """
+    print("Token Data:", token_data)
+    timestamp = token_data['exp']
+    if datetime.fromtimestamp(timestamp) > datetime.now():
+        new_access_token = create_access_token(
+            user_data=token_data["user"]
+        )
+        return JSONResponse(
+            content={
+                "access_token": new_access_token
+            },
+            status_code=status.HTTP_200_OK
+        )
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid or expired token",
+    )
+
+
+@auth_router.get('/logout', status_code=status.HTTP_200_OK)
+async def get_current_user(token: dict = Depends(Access_token_Bearer())):
+    jti = token['jti']
+    await set_token(jti)
+    return JSONResponse(
+        content={
+            "message": "Logout Successfully"
+        },
+        status_code=status.HTTP_200_OK
+    )

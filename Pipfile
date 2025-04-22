@@ -11,6 +11,7 @@ sqlmodel = "*"
 alembic = "*"
 passlib = "*"
 pyjwt = "*"
+redis = "*"
 
 [dev-packages]
 

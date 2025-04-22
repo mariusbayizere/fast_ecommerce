@@ -2,6 +2,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from .schemas import  Create_Student, Update_Student
 from sqlmodel import select, desc
 from .models import Student
+from fastapi.exceptions import HTTPException
 
 
 
@@ -36,6 +37,39 @@ class studentservice:
         return student if student is not None else None
 
 
+
+    async def get_student_by_email(self, email: str, session: AsyncSession):
+        """ This function is responsible for returning a student information by id
+
+        Args:
+            student_id (int): receive student_id to searching student
+            session (AsyncSession): will receive session as arguments 
+
+        Returns:
+            _type_: return student data if found else return None
+        """
+        statement = select(Student).where(Student.Email == email)
+        result = await session.exec(statement)
+        student = result.first()
+        return student if student is not None else None
+    
+
+    async def get_student_by_Phone_number(self, phone: str, session: AsyncSession):
+        """ This function is responsible for returning a student information by id
+
+        Args:
+            student_id (int): receive student_id to searching student
+            session (AsyncSession): will receive session as arguments 
+
+        Returns:
+            _type_: return student data if found else return None
+        """
+        statement = select(Student).where(Student.PhoneNumber == phone)
+        result = await session.exec(statement)
+        student = result.first()
+        return student if student is not None else None
+
+
     async def create_student(self, student_data: Create_Student, session: AsyncSession):
         """This function is responsible for creating a new student
         and returning the student data.
@@ -47,6 +81,7 @@ class studentservice:
         Returns:
             _type_: return student data
         """
+
         student_information =  student_data.model_dump()
 
         new_student = Student(

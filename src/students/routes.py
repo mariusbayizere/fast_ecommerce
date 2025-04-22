@@ -43,6 +43,23 @@ async def create_student(student_data: Create_Student, session: AsyncSession= De
     Returns:
         dict: return student data
     """
+
+    email = student_data.Email
+    phone = student_data.PhoneNumber
+    student_exist = await student_service.get_student_by_email(email, session)
+    if student_exist:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Student with email this {email} is already exist"
+        )
+    
+    if phone:
+        phone_exist = await student_service.get_student_by_Phone_number(phone, session)
+        if phone_exist:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Student with phone number this {phone} is already exist"
+            )
     new_student = await student_service.create_student(student_data, session)
     return new_student
 
